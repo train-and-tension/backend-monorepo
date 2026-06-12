@@ -1,0 +1,69 @@
+spring:
+  application:
+    name: identity
+
+  data:
+    redis:
+      host: ${REDIS_HOST:127.0.0.1}
+      port: ${REDIS_CONTAINER_PORT:6379}
+      password: ${REDIS_PASSWORD}
+    mongodb:
+      auto-index-creation: true
+      representation:
+        big-decimal: string
+
+  mongodb:
+    uri: "mongodb://${ID_MONGO_USERNAME}:${ID_MONGO_PASSWORD}@${ID_MONGO_HOST:127.0.0.1}:${ID_MONGO_CONTAINER_PORT:27017}/${ID_MONGO_DATABASE}?authSource=admin"
+    representation:
+      uuid: standard
+
+  output:
+    ansi:
+      enabled: ALWAYS
+
+google:
+  client-ids:
+    - ${GOOGLE_WEB_CLIENT_ID}
+    - ${GOOGLE_ANDROID_CLIENT_ID}
+#    - ${GOOGLE_IOS_CLIENT_ID}
+
+app:
+  redis:
+    refresh-token:
+      database: 0
+
+  admin:
+    emails: ${ADMIN_EMAILS}
+  user:
+    emails: ${USER_EMAILS:}
+
+  security:
+    jwt:
+      expiration: ${JWT_EXPIRATION_SEC}
+      private-key: ${JWT_PRIVATE_KEY}
+    encryption:
+      key: ${ENCRYPTION_KEY}
+      salt: ${ENCRYPTION_SALT}
+    refresh-token:
+      expiration: 604800
+
+server:
+  port: ${IDENTITY_PORT}
+
+core:
+  service:
+    url: http://${CORE_HOST:127.0.0.1}:${CORE_PORT}
+
+springdoc:
+  api-docs:
+    enabled: ${SWAGGER_ENABLED:false}
+    path: /swagger/identity/v3/api-docs
+  swagger-ui:
+    enabled: ${SWAGGER_ENABLED:false}
+    path: /swagger/identity/swagger-ui
+    validator-url: none
+    doc-expansion: none
+
+logging:
+  pattern:
+    console: "%clr(%d{yyyy-MM-dd HH:mm:ss.SSS}){faint} %clr(%5p) %clr(---){faint} %clr([%15.15t]){faint} %clr(%-40.40logger{39}){cyan} %clr(:){faint} %m%n${LOG_EXCEPTION_CONVERSION_WORD:-%wEx}"
