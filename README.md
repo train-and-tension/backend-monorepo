@@ -4,6 +4,15 @@ Train & Tension Backend is a runnable Spring-based backend monorepo for the plat
 
 The project is designed as a small microservice backend: external clients enter through the gateway, authentication and user management live in the identity service, workout/profile domain operations live in the core service, and shared concerns are extracted into a local common module.
 
+## Key Engineering Highlights
+
+- Consolidated gateway, identity, core, and shared common modules into a Maven multi-module monorepo.
+- Built a runnable local backend environment with Docker Compose, PostgreSQL, MongoDB, Redis, and service healthchecks.
+- Implemented gateway-based routing for identity and core APIs through Spring Cloud Gateway.
+- Separated authentication/user management from workout/profile domain logic with service-to-service communication.
+- Used PostgreSQL, Flyway, and jOOQ for relational domain data; MongoDB for identity data; Redis for token and cache state.
+- Added GitHub Actions CI to validate Maven builds and Docker Compose configuration.
+
 ## Architecture
 
 ```mermaid
@@ -65,19 +74,21 @@ flowchart TB
 
 ## Technology Stack
 
-- Java 25
-- Spring Boot 4
-- Spring Cloud Gateway WebFlux
-- Spring Web MVC
-- Maven multi-module reactor
-- PostgreSQL 18
-- MongoDB 7
-- Redis 7
-- Flyway
-- jOOQ
-- Springdoc OpenAPI / Swagger UI
-- Docker and Docker Compose
-- GitHub Actions CI
+| Area | Technology |
+| --- | --- |
+| Language | Java 25 |
+| Framework | Spring Boot 4 |
+| API Gateway | Spring Cloud Gateway WebFlux |
+| Core API | Spring Web MVC |
+| Build / Monorepo | Maven multi-module reactor |
+| Relational Database | PostgreSQL 18 |
+| Document Database | MongoDB 7 |
+| Cache / Token State | Redis 7 |
+| Database Migrations | Flyway |
+| SQL Access | jOOQ |
+| API Documentation | Springdoc OpenAPI / Swagger UI |
+| Infrastructure | Docker and Docker Compose |
+| CI | GitHub Actions |
 
 ## Repository Layout
 
