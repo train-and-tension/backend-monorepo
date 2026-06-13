@@ -40,11 +40,6 @@ spring:
               predicates:
                 - Path=/api/core/**
 
-            - id: ai
-              uri: http://${AI_HOST:127.0.0.1}:${AI_PORT}
-              predicates:
-                - Path=/api/ai/**
-
             - id: core-swagger
               uri: http://${CORE_HOST:127.0.0.1}:${CORE_PORT}
               predicates:

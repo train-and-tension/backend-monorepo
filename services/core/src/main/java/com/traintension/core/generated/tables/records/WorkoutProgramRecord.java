@@ -78,87 +78,73 @@ public class WorkoutProgramRecord extends UpdatableRecordImpl<WorkoutProgramReco
     }
 
     /**
-     * Setter for <code>public.workout_program.is_ai_generated</code>.
-     */
-    public void setIsAiGenerated(Boolean value) {
-        set(4, value);
-    }
-
-    /**
-     * Getter for <code>public.workout_program.is_ai_generated</code>.
-     */
-    public Boolean getIsAiGenerated() {
-        return (Boolean) get(4);
-    }
-
-    /**
      * Setter for <code>public.workout_program.name</code>.
      */
     public void setName(String value) {
-        set(5, value);
+        set(4, value);
     }
 
     /**
      * Getter for <code>public.workout_program.name</code>.
      */
     public String getName() {
-        return (String) get(5);
+        return (String) get(4);
     }
 
     /**
      * Setter for <code>public.workout_program.description</code>.
      */
     public void setDescription(String value) {
-        set(6, value);
+        set(5, value);
     }
 
     /**
      * Getter for <code>public.workout_program.description</code>.
      */
     public String getDescription() {
-        return (String) get(6);
+        return (String) get(5);
     }
 
     /**
      * Setter for <code>public.workout_program.version</code>.
      */
     public void setVersion(Long value) {
-        set(7, value);
+        set(6, value);
     }
 
     /**
      * Getter for <code>public.workout_program.version</code>.
      */
     public Long getVersion() {
-        return (Long) get(7);
+        return (Long) get(6);
     }
 
     /**
      * Setter for <code>public.workout_program.created_at</code>.
      */
     public void setCreatedAt(OffsetDateTime value) {
-        set(8, value);
+        set(7, value);
     }
 
     /**
      * Getter for <code>public.workout_program.created_at</code>.
      */
     public OffsetDateTime getCreatedAt() {
-        return (OffsetDateTime) get(8);
+        return (OffsetDateTime) get(7);
     }
 
     /**
      * Setter for <code>public.workout_program.updated_at</code>.
      */
     public void setUpdatedAt(OffsetDateTime value) {
-        set(9, value);
+        set(8, value);
     }
 
     /**
      * Getter for <code>public.workout_program.updated_at</code>.
      */
     public OffsetDateTime getUpdatedAt() {
-        return (OffsetDateTime) get(9);
+        return (OffsetDateTime) get(8);
     }
 
     // -------------------------------------------------------------------------
@@ -184,14 +170,13 @@ public class WorkoutProgramRecord extends UpdatableRecordImpl<WorkoutProgramReco
     /**
      * Create a detached, initialised WorkoutProgramRecord
      */
-    public WorkoutProgramRecord(UUID id, UUID userProfileId, Boolean isEdited, Boolean isActive, Boolean isAiGenerated, String name, String description, Long version, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
+    public WorkoutProgramRecord(UUID id, UUID userProfileId, Boolean isEdited, Boolean isActive, String name, String description, Long version, OffsetDateTime createdAt, OffsetDateTime updatedAt) {
         super(WorkoutProgram.WORKOUT_PROGRAM);
 
         setId(id);
         setUserProfileId(userProfileId);
         setIsEdited(isEdited);
         setIsActive(isActive);
-        setIsAiGenerated(isAiGenerated);
         setName(name);
         setDescription(description);
         setVersion(version);

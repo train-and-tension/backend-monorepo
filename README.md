@@ -106,4 +106,3 @@ Important variables:
 
 - `common` is included as a local Maven module, so local and Docker builds do not require GitHub Packages credentials.
 - `identity` is taken from the `development` branch because the repository default branch is `production`, while the rest of the backend services use `development`.
-- The gateway has an `/api/ai/**` route placeholder. It points to `AI_HOST` and `AI_PORT`; no AI service is started by this compose file.

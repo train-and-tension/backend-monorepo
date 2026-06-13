@@ -311,7 +311,6 @@ public class WorkoutProgramService {
                 .set(WORKOUT_PROGRAM.USER_PROFILE_ID, userId)
                 .set(WORKOUT_PROGRAM.IS_EDITED, Boolean.FALSE)
                 .set(WORKOUT_PROGRAM.IS_ACTIVE, Boolean.FALSE)
-                .set(WORKOUT_PROGRAM.IS_AI_GENERATED, sourceProgram.getIsAiGenerated())
                 .set(WORKOUT_PROGRAM.NAME, sourceProgram.getName())
                 .set(WORKOUT_PROGRAM.DESCRIPTION, sourceProgram.getDescription())
                 .returning()

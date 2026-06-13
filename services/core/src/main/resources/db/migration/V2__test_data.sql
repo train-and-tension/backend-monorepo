@@ -423,32 +423,32 @@ VALUES
 --    Kullanıcı başı 2 program; sadece biri aktif (partial unique index)
 -- ============================================================
 -- ID şeması: 018ea000-5001..5010-7000-8000-000000000000
-INSERT INTO workout_program (id, user_profile_id, is_active, is_ai_generated, name, description)
+INSERT INTO workout_program (id, user_profile_id, is_active, name, description)
 VALUES
     -- Ahmet
-    ('018ea000-5001-7000-8000-000000000000', '018ea000-0001-7000-8000-000000000001', TRUE, FALSE, 'PPL Hypertrophy',
+    ('018ea000-5001-7000-8000-000000000000', '018ea000-0001-7000-8000-000000000001', TRUE, 'PPL Hypertrophy',
      'Push / Pull / Legs split; haftada 6 gün. Bulking fazı için optimize edildi.'),
-    ('018ea000-5002-7000-8000-000000000000', '018ea000-0001-7000-8000-000000000001', FALSE, TRUE, 'AI Upper-Lower',
-     'Yapay zeka destekli upper-lower 4 günlük split (arşiv).'),
+    ('018ea000-5002-7000-8000-000000000000', '018ea000-0001-7000-8000-000000000001', FALSE, 'Upper-Lower Strength',
+     'Upper-lower 4 günlük split (arşiv).'),
     -- Zeynep
-    ('018ea000-5003-7000-8000-000000000000', '018ea000-0002-7000-8000-000000000002', TRUE, FALSE, 'Full Body 3x',
+    ('018ea000-5003-7000-8000-000000000000', '018ea000-0002-7000-8000-000000000002', TRUE, 'Full Body 3x',
      'Haftada 3 gün tam vücut antrenmanı; sürdürülebilir rutin.'),
-    ('018ea000-5004-7000-8000-000000000000', '018ea000-0002-7000-8000-000000000002', FALSE, FALSE, 'Glute & Core Focus',
+    ('018ea000-5004-7000-8000-000000000000', '018ea000-0002-7000-8000-000000000002', FALSE, 'Glute & Core Focus',
      'Kalça ve core odaklı 4 günlük split (arşiv).'),
     -- Mehmet
-    ('018ea000-5005-7000-8000-000000000000', '018ea000-0003-7000-8000-000000000003', TRUE, FALSE, '5x5 Strength',
+    ('018ea000-5005-7000-8000-000000000000', '018ea000-0003-7000-8000-000000000003', TRUE, '5x5 Strength',
      'Klasik 5x5 güç programı; compound hareketler ağırlıklı.'),
-    ('018ea000-5006-7000-8000-000000000000', '018ea000-0003-7000-8000-000000000003', FALSE, FALSE, 'Powerbuilding',
+    ('018ea000-5006-7000-8000-000000000000', '018ea000-0003-7000-8000-000000000003', FALSE, 'Powerbuilding',
      'Güç + hacim kombine program (arşiv).'),
     -- Elif
-    ('018ea000-5007-7000-8000-000000000000', '018ea000-0004-7000-8000-000000000004', TRUE, TRUE, 'AI Endurance Circuit',
-     'Yapay zeka devre antrenmanı; kardio + ağırlık kombinasyonu.'),
-    ('018ea000-5008-7000-8000-000000000000', '018ea000-0004-7000-8000-000000000004', FALSE, FALSE, 'Beginner Fitness',
+    ('018ea000-5007-7000-8000-000000000000', '018ea000-0004-7000-8000-000000000004', TRUE, 'Endurance Circuit',
+     'Devre antrenmanı; kardio + ağırlık kombinasyonu.'),
+    ('018ea000-5008-7000-8000-000000000000', '018ea000-0004-7000-8000-000000000004', FALSE, 'Beginner Fitness',
      'Başlangıç seviye 3 günlük tam vücut (arşiv).'),
     -- Can
-    ('018ea000-5009-7000-8000-000000000000', '018ea000-0005-7000-8000-000000000005', TRUE, FALSE, 'Bro Split 5 Day',
+    ('018ea000-5009-7000-8000-000000000000', '018ea000-0005-7000-8000-000000000005', TRUE, 'Bro Split 5 Day',
      'Klasik bro-split; göğüs / sırt / omuz / biceps-triceps / bacak.'),
-    ('018ea000-5010-7000-8000-000000000000', '018ea000-0005-7000-8000-000000000005', FALSE, FALSE, 'Home Workout',
+    ('018ea000-5010-7000-8000-000000000000', '018ea000-0005-7000-8000-000000000005', FALSE, 'Home Workout',
      'Evde ekipsiz antrenman programı (arşiv).');
 -- ============================================================
 -- 10. ANTRENMAN GÜNLERİ
@@ -468,7 +468,7 @@ VALUES ('018ea000-6001-7000-8000-000000000000', '018ea000-0001-7000-8000-0000000
        ('018ea000-6006-7000-8000-000000000000', '018ea000-0001-7000-8000-000000000001',
         '018ea000-5001-7000-8000-000000000000', FALSE, 6.00, 'Legs B (Hamstring / Glute)');
 
--- Ahmet – AI Upper-Lower (arşiv, 4 gün)
+-- Ahmet – Upper-Lower Strength (arşiv, 4 gün)
 INSERT INTO workout_day (id, user_profile_id, workout_program_id, is_off, order_number, name)
 VALUES ('018ea000-6007-7000-8000-000000000000', '018ea000-0001-7000-8000-000000000001',
         '018ea000-5002-7000-8000-000000000000', FALSE, 1.00, 'Upper A'),
@@ -501,7 +501,7 @@ VALUES ('018ea000-6016-7000-8000-000000000000', '018ea000-0003-7000-8000-0000000
        ('018ea000-6018-7000-8000-000000000000', '018ea000-0003-7000-8000-000000000003',
         '018ea000-5005-7000-8000-000000000000', TRUE, 3.00, 'Dinlenme');
 
--- Elif – AI Endurance Circuit (4 gün)
+-- Elif – Endurance Circuit (4 gün)
 INSERT INTO workout_day (id, user_profile_id, workout_program_id, is_off, order_number, name)
 VALUES ('018ea000-6019-7000-8000-000000000000', '018ea000-0004-7000-8000-000000000004',
         '018ea000-5007-7000-8000-000000000000', FALSE, 1.00, 'Kardio + Core'),
@@ -939,7 +939,7 @@ VALUES
     -- Ahmet
     ('018ea000-8001-7000-8000-000000000000', '018ea000-0001-7000-8000-000000000001',
      '018ea000-5002-7000-8000-000000000000', FALSE, now() - INTERVAL '180 days', now() - INTERVAL '90 days',
-     'AI Upper-Lower'),
+     'Upper-Lower Strength'),
     ('018ea000-8002-7000-8000-000000000000', '018ea000-0001-7000-8000-000000000001',
      '018ea000-5001-7000-8000-000000000000', TRUE, now() - INTERVAL '89 days', NULL, 'PPL Hypertrophy'),
     -- Zeynep
@@ -959,7 +959,7 @@ VALUES
      '018ea000-5008-7000-8000-000000000000', FALSE, now() - INTERVAL '120 days', now() - INTERVAL '30 days',
      'Beginner Fitness'),
     ('018ea000-8008-7000-8000-000000000000', '018ea000-0004-7000-8000-000000000004',
-     '018ea000-5007-7000-8000-000000000000', TRUE, now() - INTERVAL '29 days', NULL, 'AI Endurance Circuit'),
+     '018ea000-5007-7000-8000-000000000000', TRUE, now() - INTERVAL '29 days', NULL, 'Endurance Circuit'),
 -- Can (DÜZELTİLDİ: Program ID sonu 09 olmalı)
     ('018ea000-8009-7000-8000-000000000000', '018ea000-0005-7000-8000-000000000005',
      '018ea000-5010-7000-8000-000000000000', FALSE, now() - INTERVAL '160 days', now() - INTERVAL '80 days',
@@ -1147,8 +1147,8 @@ VALUES ('018ea000-9401-7000-8000-000000000000', '018ea000-0005-7000-8000-0000000
 -- ============================================================
 -- SİSTEM ANTRENMAN PROGRAMLARI (user_profile_id IS NULL)
 -- ============================================================
-INSERT INTO workout_program (id, user_profile_id, is_active, is_ai_generated, name, description)
-VALUES ('018ea000-5000-7000-8000-000000000000', NULL, TRUE, FALSE, 'System Full Body Basics',
+INSERT INTO workout_program (id, user_profile_id, is_active, name, description)
+VALUES ('018ea000-5000-7000-8000-000000000000', NULL, TRUE, 'System Full Body Basics',
         'Sistem tarafından sağlanan, tüm vücudu kapsayan temel başlangıç programı.');
 
 -- ============================================================

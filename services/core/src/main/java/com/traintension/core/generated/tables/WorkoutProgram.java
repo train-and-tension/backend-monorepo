@@ -85,11 +85,6 @@ public class WorkoutProgram extends TableImpl<WorkoutProgramRecord> {
     public final TableField<WorkoutProgramRecord, Boolean> IS_ACTIVE = createField(DSL.name("is_active"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field(DSL.raw("false"), SQLDataType.BOOLEAN)), this, "");
 
     /**
-     * The column <code>public.workout_program.is_ai_generated</code>.
-     */
-    public final TableField<WorkoutProgramRecord, Boolean> IS_AI_GENERATED = createField(DSL.name("is_ai_generated"), SQLDataType.BOOLEAN.nullable(false).defaultValue(DSL.field(DSL.raw("false"), SQLDataType.BOOLEAN)), this, "");
-
-    /**
      * The column <code>public.workout_program.name</code>.
      */
     public final TableField<WorkoutProgramRecord, String> NAME = createField(DSL.name("name"), SQLDataType.VARCHAR(100).nullable(false), this, "");

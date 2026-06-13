@@ -127,8 +127,6 @@ services:
       IDENTITY_PORT: ${IDENTITY_PORT}
       CORE_HOST: core
       CORE_PORT: ${CORE_PORT}
-      AI_HOST: ${AI_HOST}
-      AI_PORT: ${AI_PORT}
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"

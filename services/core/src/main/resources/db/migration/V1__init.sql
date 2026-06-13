@@ -175,7 +175,6 @@ CREATE TABLE workout_program
     duplicated_id   UUID                      DEFAULT NULL,
     is_edited       BOOLEAN          NOT NULL DEFAULT FALSE,
     is_active       BOOLEAN          NOT NULL DEFAULT FALSE,
-    is_ai_generated BOOLEAN          NOT NULL DEFAULT FALSE,
     name            VARCHAR(100)     NOT NULL,
     description     VARCHAR(1000),
     version         BIGINT           NOT NULL DEFAULT 0,
