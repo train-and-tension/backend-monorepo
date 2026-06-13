@@ -63,6 +63,12 @@ services:
       SWAGGER_ENABLED: ${SWAGGER_ENABLED}
     ports:
       - "${CORE_PORT}:${CORE_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:${CORE_PORT}/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     depends_on:
       postgres:
         condition: service_healthy
@@ -103,7 +109,13 @@ services:
       redis:
         condition: service_healthy
       core:
-        condition: service_started
+        condition: service_healthy
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:${IDENTITY_PORT}/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
 
   gateway:
     build:
@@ -120,11 +132,17 @@ services:
       JWT_PUBLIC_KEY: ${JWT_PUBLIC_KEY}
     ports:
       - "${GATEWAY_PORT}:${GATEWAY_PORT}"
+    healthcheck:
+      test: ["CMD-SHELL", "wget -q --spider http://127.0.0.1:${GATEWAY_PORT}/actuator/health || exit 1"]
+      interval: 10s
+      timeout: 5s
+      retries: 12
+      start_period: 20s
     depends_on:
       identity:
-        condition: service_started
+        condition: service_healthy
       core:
-        condition: service_started
+        condition: service_healthy
 
 volumes:
   postgres-data:

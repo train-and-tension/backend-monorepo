@@ -11,6 +11,20 @@ This repository is a runnable monorepo for the Train & Tension backend services.
 - `infra/docker`: Docker build files for each service.
 - `compose.yaml`: Local infrastructure and service orchestration.
 
+## Architecture
+
+```mermaid
+flowchart LR
+    client["Client / Mobile App"] --> gateway["Gateway :8080"]
+    gateway --> identity["Identity :8081"]
+    gateway --> core["Core :8082"]
+    identity --> mongo["MongoDB"]
+    identity --> redis["Redis"]
+    identity --> core
+    core --> postgres["PostgreSQL 18"]
+    core --> redis
+```
+
 ## Prerequisites
 
 - Docker Desktop with Docker Compose.
@@ -80,6 +94,13 @@ Important variables:
 - `ID_MONGO_*`: MongoDB settings for `identity`.
 - `REDIS_*`: Shared Redis settings.
 - `SWAGGER_ENABLED`: Enables Springdoc routes for local inspection.
+
+## Reliability Checks
+
+- GitHub Actions validates the Maven reactor build on every push and pull request.
+- Docker Compose config is validated in CI.
+- PostgreSQL, MongoDB, Redis, `core`, `identity`, and `gateway` have local healthchecks.
+- Service startup ordering waits for dependencies to become healthy before dependent services start.
 
 ## Notes
 
