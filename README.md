@@ -74,186 +74,91 @@ flowchart TB
 
 ## Core Domain Model
 
-The core service domain is derived from the Flyway migrations under `services/core/src/main/resources/db/migration`. It models user fitness profiles, body measurements, exercise catalogs, workout plans, scheduled/completed sessions, completed set results, saved exercises, and sync/delete history.
+The core service domain is derived from the Flyway migrations under `services/core/src/main/resources/db/migration`. It models user fitness profiles, body measurements, exercise catalogs, workout plans, scheduled/completed sessions, completed set results, saved exercises, and client synchronization state.
 
 ```mermaid
-erDiagram
-    USER_PROFILE {
-        UUID id PK
-        VARCHAR username UK
-        VARCHAR first_name
-        VARCHAR last_name
-        VARCHAR timezone
-        BIGINT version
-    }
+%%{init: {"flowchart": {"defaultRenderer": "elk", "curve": "linear", "nodeSpacing": 55, "rankSpacing": 75}} }%%
+flowchart LR
+    user["user_profile<br/>id, username, name<br/>timezone, version"]
 
-    BODY_INFORMATION {
-        UUID id PK
-        UUID user_profile_id FK
-        training_goal training_goal
-        weight_goal weight_goal
-        DECIMAL weight_kg
-        DECIMAL height_cm
-        gender gender
-        activity_level activity_level
-        unit_system unit
-        BIGINT version
-    }
+    subgraph profile["Profile & Body"]
+        body["body_information<br/>training_goal, weight_goal<br/>weight_kg, height_cm<br/>gender, activity_level, unit"]
+        measurement["measurement_history<br/>weight_kg, height_cm<br/>unit, created_at, version"]
+    end
 
-    MEASUREMENT_HISTORY {
-        UUID id PK
-        UUID user_profile_id FK
-        DECIMAL weight_kg
-        DECIMAL height_cm
-        unit_system unit
-        BIGINT version
-    }
+    subgraph catalog["Exercise Catalog"]
+        equipment["equipment<br/>system or user-scoped<br/>name, description, media_url"]
+        exercise["exercise<br/>system or user-scoped<br/>equipment_id, name, media_url"]
+        muscle["muscle<br/>system catalog<br/>name, description, media_url"]
+        exerciseMuscle["exercise_muscle<br/>exercise_id + muscle_id<br/>activation_level"]
+        savedExercise["saved_exercise<br/>user_profile_id + exercise_id<br/>unique saved item"]
+    end
 
-    EQUIPMENT {
-        UUID id PK
-        UUID user_profile_id FK
-        VARCHAR name
-        VARCHAR media_url
-        BIGINT version
-    }
+    subgraph planning["Workout Planning"]
+        program["workout_program<br/>system or user-scoped<br/>is_edited, is_active, name"]
+        day["workout_day<br/>program day<br/>is_off, order_number, name"]
+        targetSet["target_set<br/>planned work<br/>exercise, weight, reps/duration<br/>rest, order_number"]
+    end
 
-    EXERCISE {
-        UUID id PK
-        UUID user_profile_id FK
-        UUID equipment_id FK
-        VARCHAR name
-        VARCHAR media_url
-        BIGINT version
-    }
+    subgraph tracking["Workout Tracking"]
+        period["workout_period<br/>active training period<br/>program snapshot, start/end"]
+        session["workout_session<br/>planned/finished/missed<br/>workout/off/quick workout"]
+        setResult["set_result<br/>completed work<br/>actual reps/duration/weight<br/>target snapshot"]
+    end
 
-    MUSCLE {
-        UUID id PK
-        VARCHAR name UK
-        VARCHAR media_url
-        BIGINT version
-    }
+    user --> body
+    user --> measurement
+    user --> equipment
+    user --> exercise
+    user --> savedExercise
+    user --> program
+    user --> period
+    user --> session
+    user --> setResult
 
-    EXERCISE_MUSCLE {
-        UUID id PK
-        UUID user_profile_id FK
-        UUID exercise_id FK
-        UUID muscle_id FK
-        activation_level activation_level
-        BIGINT version
-    }
+    equipment --> exercise
+    exercise --> exerciseMuscle
+    muscle --> exerciseMuscle
+    exercise --> savedExercise
 
-    SAVED_EXERCISE {
-        UUID id PK
-        UUID user_profile_id FK
-        UUID exercise_id FK
-        BIGINT version
-    }
+    program --> day
+    day --> targetSet
+    exercise --> targetSet
 
-    WORKOUT_PROGRAM {
-        UUID id PK
-        UUID user_profile_id FK
-        BOOLEAN is_edited
-        BOOLEAN is_active
-        VARCHAR name
-        BIGINT version
-    }
+    program --> period
+    period --> session
+    day --> session
+    session --> setResult
+    exercise --> setResult
+```
 
-    WORKOUT_DAY {
-        UUID id PK
-        UUID user_profile_id FK
-        UUID workout_program_id FK
-        BOOLEAN is_off
-        INTEGER order_number
-        VARCHAR name
-        BIGINT version
-    }
+### Sync and Delete Tracking
 
-    TARGET_SET {
-        UUID id PK
-        UUID user_profile_id FK
-        UUID exercise_id FK
-        UUID workout_day_id FK
-        DECIMAL weight_kg
-        INTEGER rep_count
-        INTEGER duration
-        INTEGER rest_duration
-        INTEGER order_number
-        BIGINT version
-    }
+The core schema also includes a version-based synchronization mechanism. Inserts and updates receive a global version number, while deletes are recorded separately in `deleted_history` so clients can reconcile removed records.
 
-    WORKOUT_PERIOD {
-        UUID id PK
-        UUID user_profile_id FK
-        UUID workout_program_id FK
-        BOOLEAN is_active
-        TIMESTAMPTZ start_date
-        TIMESTAMPTZ end_date
-        VARCHAR workout_program_name_snapshot
-        BIGINT version
-    }
+```mermaid
+%%{init: {"flowchart": {"defaultRenderer": "elk", "curve": "linear", "nodeSpacing": 60, "rankSpacing": 80}} }%%
+flowchart LR
+    mutation["domain mutation<br/>insert / update / delete"]
+    sequence["global_version_seq<br/>central increasing counter"]
+    versionTriggers["version triggers<br/>BEFORE INSERT OR UPDATE"]
+    syncTables["syncable domain tables<br/>user_profile, body_information<br/>measurement_history, catalog<br/>workout planning, sessions, results"]
+    syncIndexes["sync indexes<br/>user_profile_id + version<br/>or version for system catalogs"]
+    deleteTriggers["delete triggers<br/>BEFORE DELETE"]
+    deletedHistory["deleted_history<br/>version, user_profile_id<br/>record_id, table_name<br/>created_at"]
+    cleanup["cleanup_deleted_history()<br/>keeps recent delete events"]
+    clientSync["client sync endpoint<br/>changed rows + deleted rows<br/>after last known version"]
 
-    WORKOUT_SESSION {
-        UUID id PK
-        UUID user_profile_id FK
-        UUID workout_period_id FK
-        UUID workout_day_id FK
-        DATE start_date
-        workout_status status
-        session_type type
-        VARCHAR workout_day_name_snapshot
-        INTEGER exercise_count_snapshot
-        BIGINT version
-    }
+    mutation --> versionTriggers
+    versionTriggers --> sequence
+    sequence --> syncTables
+    syncTables --> syncIndexes
+    syncIndexes --> clientSync
 
-    SET_RESULT {
-        UUID id PK
-        UUID user_profile_id FK
-        UUID workout_session_id FK
-        UUID exercise_id FK
-        INTEGER order_number
-        INTEGER rep_count
-        INTEGER duration
-        DECIMAL weight_kg
-        VARCHAR exercise_name_snapshot
-        INTEGER targeted_rep_count
-        DECIMAL targeted_weight
-        INTEGER targeted_duration
-        BIGINT version
-    }
-
-    DELETED_HISTORY {
-        BIGINT version PK
-        UUID user_profile_id
-        UUID record_id
-        VARCHAR table_name
-        TIMESTAMPTZ created_at
-    }
-
-    USER_PROFILE ||--o{ BODY_INFORMATION : has
-    USER_PROFILE ||--o{ MEASUREMENT_HISTORY : tracks
-    USER_PROFILE ||--o{ EQUIPMENT : owns
-    USER_PROFILE ||--o{ EXERCISE : owns
-    USER_PROFILE ||--o{ EXERCISE_MUSCLE : scopes
-    USER_PROFILE ||--o{ SAVED_EXERCISE : saves
-    USER_PROFILE ||--o{ WORKOUT_PROGRAM : owns
-    USER_PROFILE ||--o{ WORKOUT_DAY : owns
-    USER_PROFILE ||--o{ TARGET_SET : owns
-    USER_PROFILE ||--o{ WORKOUT_PERIOD : follows
-    USER_PROFILE ||--o{ WORKOUT_SESSION : performs
-    USER_PROFILE ||--o{ SET_RESULT : records
-
-    EQUIPMENT ||--o{ EXERCISE : supports
-    EXERCISE ||--o{ EXERCISE_MUSCLE : targets
-    MUSCLE ||--o{ EXERCISE_MUSCLE : activated_by
-    EXERCISE ||--o{ SAVED_EXERCISE : saved_as
-    WORKOUT_PROGRAM ||--o{ WORKOUT_DAY : contains
-    WORKOUT_DAY ||--o{ TARGET_SET : contains
-    EXERCISE ||--o{ TARGET_SET : prescribed_as
-    WORKOUT_PROGRAM ||--o{ WORKOUT_PERIOD : becomes
-    WORKOUT_PERIOD ||--o{ WORKOUT_SESSION : schedules
-    WORKOUT_DAY ||--o{ WORKOUT_SESSION : planned_from
-    WORKOUT_SESSION ||--o{ SET_RESULT : produces
-    EXERCISE ||--o{ SET_RESULT : performed_as
+    mutation --> deleteTriggers
+    deleteTriggers --> deletedHistory
+    deletedHistory --> cleanup
+    deletedHistory --> clientSync
 ```
 
 Core migration rules worth highlighting:
