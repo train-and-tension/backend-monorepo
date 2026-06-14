@@ -72,6 +72,200 @@ flowchart TB
 - `services/core`: Workout, profile, sync, and catalog domain API. It uses PostgreSQL as the source of truth, Flyway for schema migrations, jOOQ for type-safe SQL access, Redis for shared cache state, and Caffeine for local in-memory caching.
 - `libs/common`: Shared DTOs, exceptions, user context utilities, role checks, and cross-service support code.
 
+## Core Domain Model
+
+The core service domain is derived from the Flyway migrations under `services/core/src/main/resources/db/migration`. It models user fitness profiles, body measurements, exercise catalogs, workout plans, scheduled/completed sessions, completed set results, saved exercises, and sync/delete history.
+
+```mermaid
+erDiagram
+    USER_PROFILE {
+        UUID id PK
+        VARCHAR username UK
+        VARCHAR first_name
+        VARCHAR last_name
+        VARCHAR timezone
+        BIGINT version
+    }
+
+    BODY_INFORMATION {
+        UUID id PK
+        UUID user_profile_id FK
+        training_goal training_goal
+        weight_goal weight_goal
+        DECIMAL weight_kg
+        DECIMAL height_cm
+        gender gender
+        activity_level activity_level
+        unit_system unit
+        BIGINT version
+    }
+
+    MEASUREMENT_HISTORY {
+        UUID id PK
+        UUID user_profile_id FK
+        DECIMAL weight_kg
+        DECIMAL height_cm
+        unit_system unit
+        BIGINT version
+    }
+
+    EQUIPMENT {
+        UUID id PK
+        UUID user_profile_id FK
+        VARCHAR name
+        VARCHAR media_url
+        BIGINT version
+    }
+
+    EXERCISE {
+        UUID id PK
+        UUID user_profile_id FK
+        UUID equipment_id FK
+        VARCHAR name
+        VARCHAR media_url
+        BIGINT version
+    }
+
+    MUSCLE {
+        UUID id PK
+        VARCHAR name UK
+        VARCHAR media_url
+        BIGINT version
+    }
+
+    EXERCISE_MUSCLE {
+        UUID id PK
+        UUID user_profile_id FK
+        UUID exercise_id FK
+        UUID muscle_id FK
+        activation_level activation_level
+        BIGINT version
+    }
+
+    SAVED_EXERCISE {
+        UUID id PK
+        UUID user_profile_id FK
+        UUID exercise_id FK
+        BIGINT version
+    }
+
+    WORKOUT_PROGRAM {
+        UUID id PK
+        UUID user_profile_id FK
+        BOOLEAN is_edited
+        BOOLEAN is_active
+        VARCHAR name
+        BIGINT version
+    }
+
+    WORKOUT_DAY {
+        UUID id PK
+        UUID user_profile_id FK
+        UUID workout_program_id FK
+        BOOLEAN is_off
+        INTEGER order_number
+        VARCHAR name
+        BIGINT version
+    }
+
+    TARGET_SET {
+        UUID id PK
+        UUID user_profile_id FK
+        UUID exercise_id FK
+        UUID workout_day_id FK
+        DECIMAL weight_kg
+        INTEGER rep_count
+        INTEGER duration
+        INTEGER rest_duration
+        INTEGER order_number
+        BIGINT version
+    }
+
+    WORKOUT_PERIOD {
+        UUID id PK
+        UUID user_profile_id FK
+        UUID workout_program_id FK
+        BOOLEAN is_active
+        TIMESTAMPTZ start_date
+        TIMESTAMPTZ end_date
+        VARCHAR workout_program_name_snapshot
+        BIGINT version
+    }
+
+    WORKOUT_SESSION {
+        UUID id PK
+        UUID user_profile_id FK
+        UUID workout_period_id FK
+        UUID workout_day_id FK
+        DATE start_date
+        workout_status status
+        session_type type
+        VARCHAR workout_day_name_snapshot
+        INTEGER exercise_count_snapshot
+        BIGINT version
+    }
+
+    SET_RESULT {
+        UUID id PK
+        UUID user_profile_id FK
+        UUID workout_session_id FK
+        UUID exercise_id FK
+        INTEGER order_number
+        INTEGER rep_count
+        INTEGER duration
+        DECIMAL weight_kg
+        VARCHAR exercise_name_snapshot
+        INTEGER targeted_rep_count
+        DECIMAL targeted_weight
+        INTEGER targeted_duration
+        BIGINT version
+    }
+
+    DELETED_HISTORY {
+        BIGINT version PK
+        UUID user_profile_id
+        UUID record_id
+        VARCHAR table_name
+        TIMESTAMPTZ created_at
+    }
+
+    USER_PROFILE ||--o{ BODY_INFORMATION : has
+    USER_PROFILE ||--o{ MEASUREMENT_HISTORY : tracks
+    USER_PROFILE ||--o{ EQUIPMENT : owns
+    USER_PROFILE ||--o{ EXERCISE : owns
+    USER_PROFILE ||--o{ EXERCISE_MUSCLE : scopes
+    USER_PROFILE ||--o{ SAVED_EXERCISE : saves
+    USER_PROFILE ||--o{ WORKOUT_PROGRAM : owns
+    USER_PROFILE ||--o{ WORKOUT_DAY : owns
+    USER_PROFILE ||--o{ TARGET_SET : owns
+    USER_PROFILE ||--o{ WORKOUT_PERIOD : follows
+    USER_PROFILE ||--o{ WORKOUT_SESSION : performs
+    USER_PROFILE ||--o{ SET_RESULT : records
+
+    EQUIPMENT ||--o{ EXERCISE : supports
+    EXERCISE ||--o{ EXERCISE_MUSCLE : targets
+    MUSCLE ||--o{ EXERCISE_MUSCLE : activated_by
+    EXERCISE ||--o{ SAVED_EXERCISE : saved_as
+    WORKOUT_PROGRAM ||--o{ WORKOUT_DAY : contains
+    WORKOUT_DAY ||--o{ TARGET_SET : contains
+    EXERCISE ||--o{ TARGET_SET : prescribed_as
+    WORKOUT_PROGRAM ||--o{ WORKOUT_PERIOD : becomes
+    WORKOUT_PERIOD ||--o{ WORKOUT_SESSION : schedules
+    WORKOUT_DAY ||--o{ WORKOUT_SESSION : planned_from
+    WORKOUT_SESSION ||--o{ SET_RESULT : produces
+    EXERCISE ||--o{ SET_RESULT : performed_as
+```
+
+Core migration rules worth highlighting:
+
+- System catalog records are represented with `user_profile_id IS NULL`; user-specific records are scoped with `user_profile_id`.
+- Every syncable domain table receives a monotonically increasing `version` from `global_version_seq`.
+- Delete operations are captured in `deleted_history`, which lets clients sync removals as well as inserts and updates.
+- `target_set` and `set_result` enforce exactly one effort type: either `rep_count` or `duration`.
+- A user can have only one active workout program, while system workout programs are prevented from being active.
+- Equipment uniqueness is split between global system equipment names and per-user equipment names.
+- Workout sessions and set results keep snapshot fields so historical workout records remain readable even if catalog data changes later.
+
 ## Technology Stack
 
 | Area | Technology |
@@ -196,6 +390,12 @@ Important variables:
 - PostgreSQL, MongoDB, Redis, `core`, `identity`, and `gateway` have local healthchecks.
 - Service startup ordering waits for dependencies to become healthy before dependent services start.
 - Spring Actuator health endpoints are used by service healthchecks.
+
+## Ownership and Rights
+
+Copyright (c) 2026 Ahmet Baha Aktürk. All rights reserved.
+
+This repository is published as a portfolio and graduation project showcase. Unless a separate license is provided, the source code, architecture, documentation, and related assets may not be copied, redistributed, or used commercially without permission from Ahmet Baha Aktürk.
 
 ## Status
 
